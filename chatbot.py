@@ -7,8 +7,8 @@ from openai_tools import get_embedding, num_tokens_from_messages
 openai.api_key = OPENAI_API_KEY
 
 class ChatGPT():
-    def __init__(self, gpt_model, table_name):
-        self.long_term_memory = Memory(table_name)
+    def __init__(self, gpt_model):
+        self.long_term_memory = Memory()
         self.short_term_memory = []
         self.gpt_model = gpt_model
 
@@ -28,7 +28,7 @@ class ChatGPT():
 
         temp_messages = [{"role": "system", "content": f"Current time: {datetime.now().strftime('%B %d, %Y %I:%M:%S %p')}"}, {"role": "user", "content": message}]
         for msg in reversed(self.short_term_memory):
-            if num_tokens_from_messages(messages + temp_messages + [msg]) <= (8192 - max_tokens if 'gpt-4' in self.gpt_model else 4096 - max_tokens):
+            if num_tokens_from_messages(messages + temp_messages + [msg], self.gpt_model) <= (8192 - max_tokens if self.gpt_model == 'gpt-4' else 4096 - max_tokens):
                 temp_messages.append(msg)
             else:
                 break

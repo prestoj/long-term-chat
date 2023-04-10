@@ -36,3 +36,7 @@ def num_tokens_from_messages(messages, model="gpt-3.5-turbo"):
                 num_tokens += tokens_per_name
     num_tokens += 3  # every reply is primed with <|start|>assistant<|message|>
     return num_tokens
+
+def num_tokens_from_text(text, model="gpt-3.5-turbo"):
+    encoding = tiktoken.encoding_for_model(model)
+    return len(encoding.encode(text))

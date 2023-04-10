@@ -1,12 +1,12 @@
 from datetime import datetime
 import pinecone
 from openai_tools import get_embedding
-from config import PINECONE_API_KEY, PINECONE_ENVIRONMENT
+from config import PINECONE_API_KEY, PINECONE_ENVIRONMENT, PINECONE_TABLE_NAME
 import uuid
 
 class Memory():
-    def __init__(self, table_name):
-        self.table_name = table_name
+    def __init__(self):
+        self.table_name = PINECONE_TABLE_NAME
         self.dimension = 1536
         self.metric = "cosine"
         self.pod_type = "p1"
@@ -19,6 +19,9 @@ class Memory():
 
     def upload_message_response_pair(self, message, response):
         self.index.upsert([(str(uuid.uuid4()), get_embedding(message + response), {"message": message, "response": response, "timestamp": datetime.now()})])
+
+    def upload_code(self, file, code, start_line, end_line):
+        self.index.upsert([(str(uuid.uuid4()), get_embedding(code), {"file": file, "code": code, "start_line": start_line, "end_line": end_line})])
 
     def search(self, vector, k=5):
         message_response_pairs = self.index.query(vector, top_k=k, include_metadata=True)
