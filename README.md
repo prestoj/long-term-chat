@@ -11,8 +11,8 @@ https://user-images.githubusercontent.com/23005801/230815912-99fb3fac-01f2-40fa-
 
 1. Clone the repository:
 
-`git clone https://github.com/prestoj/long-term-chat.git
-cd long-term-chat`
+`git clone https://github.com/prestoj/long-term-chat.git`
+`cd long-term-chat`
 
 
 2. Install the required dependencies:
