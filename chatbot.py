@@ -13,7 +13,6 @@ class ChatGPT():
         self.gpt_model = gpt_model
 
     def send_message(self, message, temperature=0.7, n=1, max_tokens=500):
-        self.long_term_memory.search(get_embedding(message))
         messages = [
             {"role": "system", "content": f"You are ChatGPT, a large language model trained by OpenAI. Knowledge cutoff: September 2021"},
         ]
