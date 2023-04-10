@@ -2,6 +2,11 @@
 
 Long-Term Chat is a chatbot project that enhances ChatGPT with long-term memory capabilities, making conversations more fun and personal. The project runs on OpenAI's GPT-3.5-turbo by default, but this can be configured in the .env file.
 
+## Demo
+
+<iframe width="560" height="315" src="https://youtu.be/cv_fe_p6NM4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
 ## Getting Started
 
 1. Clone the repository:
