@@ -1,11 +1,70 @@
 import openai
 from config import OPENAI_API_KEY
 import tiktoken
+import re
 
 openai.api_key = OPENAI_API_KEY
 
 def get_embedding(text):
     return openai.Embedding.create(input=[text], model="text-embedding-ada-002")["data"][0]["embedding"]
+
+def get_importance_of_interaction(message, response):
+    importance_response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        messages=[
+            {'role': 'system', 'content': 'You are a large language model. The following is a snippet of a conversation between a user and a chatbot.'}, 
+            {'role': 'user', 'content': message}, 
+            {'role': 'assistant', 'content': response},
+            {'role': 'system', 'content': 'Please rate the importance of remembering the above interaction on a scale from 1 to 10 where 1 is trivial and 10 is very important. You can only answer with the number, do not add any commentary.'}
+        ],
+        temperature=0,
+        n=1,
+        max_tokens=1
+    )
+
+    importance = int(importance_response.choices[0].message.content) / 10
+
+    return importance
+
+def get_importance_of_insight(insight):
+    importance_response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        messages=[
+            {'role': 'system', 'content': 'You are a large language model. The following is an insight you gained from of a conversation with a user.'}, 
+            {'role': 'assistant', 'content': insight},
+            {'role': 'system', 'content': 'Please rate the importance of remembering the above insight on a scale from 1 to 10 where 1 is trivial and 10 is very important. You can only answer with the number, do not add any commentary.'}
+        ],
+        temperature=0,
+        n=1,
+        max_tokens=1
+    )
+
+    importance = int(importance_response.choices[0].message.content) / 10
+
+    return importance
+
+def get_insights(messages):
+    response = openai.ChatCompletion.create(
+        model='gpt-3.5-turbo',
+        messages=messages + [{'role': 'system', 'content': 'Please list up to 5 high-level insights you can infer from the above conversation. You must respond in a list format with each insight surrounded by quotes, e.g. ["The user seems...", "The user likes...", "The user is...", ...]'}],
+        temperature=0.7,
+        n=1,
+        max_tokens=500
+    )
+
+    # Extract the insights from the string
+    insights_list = re.findall(r'"(.*?)"', response.choices[0].message.content)
+
+    insights = []
+
+    for insight in insights_list:
+        insights.append({
+            'content': insight,
+            'importance': get_importance_of_insight(insight)
+        })
+
+    return insights
+
 
 # https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 def num_tokens_from_messages(messages, model="gpt-3.5-turbo"):

@@ -7,22 +7,25 @@ from openai_tools import get_embedding, num_tokens_from_messages
 openai.api_key = OPENAI_API_KEY
 
 class ChatGPT():
-    def __init__(self, gpt_model, table_name):
-        self.long_term_memory = Memory(table_name)
+    def __init__(self, gpt_model):
+        self.long_term_memory = Memory()
         self.short_term_memory = []
         self.gpt_model = gpt_model
 
     def send_message(self, message, temperature=0.7, n=1, max_tokens=500):
         messages = [
-            {"role": "system", "content": f"You are ChatGPT, a large language model trained by OpenAI. Knowledge cutoff: September 2021"},
+            {"role": "system", "content": f"You are ChatGPT, a large language model trained by OpenAI, with the added ability to recall snippets from past conversations. Knowledge cutoff: September 2021"},
         ]
 
         long_term_memory_messages = self.long_term_memory.search(get_embedding(message))
 
         for msg in sorted(long_term_memory_messages, key=lambda x: x["timestamp"]):
-            messages.append({"role": "system", "content": f"This is a snippet from earlier on {msg['timestamp'].strftime('%B %d, %Y %I:%M:%S %p')}"})
-            messages.append({"role": "user", "content": msg["message"]})
-            messages.append({"role": "assistant", "content": msg["response"]})
+            if "insight" in msg:
+                messages.append({"role": "system", "content": f"You had the following insight on {msg['timestamp'].strftime('%B %d, %Y %I:%M:%S %p')}: {msg['insight']}"})
+            else:
+                messages.append({"role": "system", "content": f"This is a snippet from earlier on {msg['timestamp'].strftime('%B %d, %Y %I:%M:%S %p')}"})
+                messages.append({"role": "user", "content": msg["message"]})
+                messages.append({"role": "assistant", "content": msg["response"]})
 
         messages.append({"role": "system", "content": f"The following is the current conversation:"})
 
@@ -47,6 +50,7 @@ class ChatGPT():
         self.short_term_memory.append({"role": "assistant", "content": response.choices[0].message.content})
 
         self.long_term_memory.upload_message_response_pair(message, response.choices[0].message.content)
+        self.long_term_memory.reflect(self.short_term_memory)
 
         return response.choices[0].message.content
 
