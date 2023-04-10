@@ -36,8 +36,6 @@ class ChatGPT():
 
         messages.extend(reversed(temp_messages))
 
-        print(messages)
-
         response = openai.ChatCompletion.create(
             model=self.gpt_model,
             messages=messages,
