@@ -4,7 +4,7 @@ Long-Term Chat is a chatbot project that enhances ChatGPT with long-term memory 
 
 ## Demo
 
-<iframe width="560" height="315" src="https://youtu.be/cv_fe_p6NM4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+https://user-images.githubusercontent.com/23005801/230815912-99fb3fac-01f2-40fa-ad99-d4960efba803.mp4
 
 
 ## Getting Started
