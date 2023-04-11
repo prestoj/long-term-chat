@@ -27,7 +27,7 @@ class Memory():
         for insight in insights:
             self.index.upsert([(str(uuid.uuid4()), get_embedding(insight["content"]), {"insight": insight["content"], "importance": insight["importance"], "timestamp": datetime.now()})])
 
-    def search(self, vector, n=5):
+    def search(self, vector, n=100):
         message_response_pairs = self.index.query(vector, top_k=1000, include_metadata=True)
         results = [
             {
@@ -52,15 +52,24 @@ class Memory():
 
             # Calculate the min and max values for each dimension
             min_days_since, max_days_since = min(days_since_values), max(days_since_values)
-            min_importance, max_importance = min(importance_values), max(importance_values)
             min_similarity, max_similarity = min(similarity_values), max(similarity_values)
+
+            # Calculate the min and max values for importance separately for insights and non-insights
+            min_importance_insight, max_importance_insight = min(x["importance"] for x in results if x["insight"]), max(x["importance"] for x in results if x["insight"])
+            min_importance_no_insight, max_importance_no_insight = min(x["importance"] for x in results if not x["insight"]), max(x["importance"] for x in results if not x["insight"])
 
             # Apply min-max scaling and compute the scaled score
             epsilon = 1e-8
             for i, result in enumerate(results):
                 days_since_scaled = (days_since_values[i] - min_days_since) / (max_days_since - min_days_since + epsilon)
-                importance_scaled = (importance_values[i] - min_importance) / (max_importance - min_importance + epsilon)
                 similarity_scaled = (similarity_values[i] - min_similarity) / (max_similarity - min_similarity + epsilon)
+
+                # Scale importance based on whether it was an insight or not
+                if result["insight"]:
+                    importance_scaled = (importance_values[i] - min_importance_insight) / (max_importance_insight - min_importance_insight + epsilon)
+                else:
+                    importance_scaled = (importance_values[i] - min_importance_no_insight) / (max_importance_no_insight - min_importance_no_insight + epsilon)
+
                 result["score"] = 1/3 * days_since_scaled + 1/3 * importance_scaled + 1/3 * similarity_scaled
 
             # Sort the results based on the score in descending order
@@ -68,6 +77,3 @@ class Memory():
 
         # Return the top n results
         return results[:n]
-
-        
-

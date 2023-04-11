@@ -15,16 +15,19 @@ def get_importance_of_interaction(message, response):
             {'role': 'system', 'content': 'You are a large language model. The following is a snippet of a conversation between a user and a chatbot.'}, 
             {'role': 'user', 'content': message}, 
             {'role': 'assistant', 'content': response},
-            {'role': 'system', 'content': 'Please rate the importance of remembering the above interaction on a scale from 1 to 10 where 1 is trivial and 10 is very important. You can only answer with the number, do not add any commentary.'}
+            {'role': 'system', 'content': 'Please rate the importance of remembering the above interaction on a scale from 1 to 10 where 1 is trivial and 10 is very important. Only respond with the number, do not add any commentary.'}
         ],
         temperature=0,
         n=1,
-        max_tokens=1
+        max_tokens=100
     )
 
-    importance = int(importance_response.choices[0].message.content) / 10
+    numbers = re.findall(r'\b(?:10|[1-9])\b', importance_response.choices[0].message.content)
+    if numbers:
+        return int(numbers[0]) / 10
 
-    return importance
+    print("Error: Could not parse importance of interaction. Defaulting to 3 out of 10.")
+    return 0.3
 
 def get_importance_of_insight(insight):
     importance_response = openai.ChatCompletion.create(
@@ -32,16 +35,19 @@ def get_importance_of_insight(insight):
         messages=[
             {'role': 'system', 'content': 'You are a large language model. The following is an insight you gained from of a conversation with a user.'}, 
             {'role': 'assistant', 'content': insight},
-            {'role': 'system', 'content': 'Please rate the importance of remembering the above insight on a scale from 1 to 10 where 1 is trivial and 10 is very important. You can only answer with the number, do not add any commentary.'}
+            {'role': 'system', 'content': 'Please rate the importance of remembering the above insight on a scale from 1 to 10 where 1 is trivial and 10 is very important. Only respond with the number, do not add any commentary.'}
         ],
         temperature=0,
         n=1,
-        max_tokens=1
+        max_tokens=100
     )
 
-    importance = int(importance_response.choices[0].message.content) / 10
+    numbers = re.findall(r'\b(?:10|[1-9])\b', importance_response.choices[0].message.content)
+    if numbers:
+        return int(numbers[0]) / 10
 
-    return importance
+    print("Error: Could not parse importance of interaction. Defaulting to 3 out of 10.")
+    return 0.3
 
 def get_insights(messages):
     response = openai.ChatCompletion.create(
